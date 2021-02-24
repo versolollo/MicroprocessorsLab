@@ -8,37 +8,35 @@ main:
 
 	org	0x100		    ; Main code starts here at address 0x100
 start:
-	movlw	0x0
-	movwf	TRISC, A	; set PORT C all outputs
-	movwf	TRISB, A	; set PORT B all outputs
-	movwf	PORTC, A	; initialise ports at 0
-	movwf	PORTB, A  
-	movwf	TRISD, A
-	movwf	PORTD, A
-	call	delay	
+	movlw	0x00
+	movwf	TRISD, A	    ; set PORTD to output
+	movlw	0x11		    
+	movwf	PORTD, A	    ; deactivate output enabler for latches
+	movlw	0xFF	
+	movwf	TRISC, A	    ; first bit of PORTC selects latch
+	movwf	TRISB, A	    ; set PORTB to input
+	movwf	TRISE, A	    ; initialise PORTE to input (avoid short circuits)
+write:
+	movlw	0x00
+	BSF	PORTD, 0, A	    ; disable output enablers
+	BSF	PORTD, 8, A	    
+	movlw	0xFF
+	movwf	TRISE, A	    ; set PORTE to output
+	movf	PORTB, W, A	    ; load value to write in W
+	movwf	PORTE, A	    ; write W into PORTE
+	BTFSS	PORTC, 0, A
+	
 delay:
 	movlw	0x00
-	movwf	0x05, A		; reset loop timer
 	movwf	0x06, A		; reset looptwo timer
-	call	loop
+	call	timer
 	return
-looptwo:
-	movff	0x06,PORTC	; move timer value in PORTC
-	movlw	0x08		; load max value into w
-	cpfslt	0x06		; compare timer value with max value
+timer:
+	movlw	0x03		; load max timer value into W
+	cpfslt	0x06, A		
 	return
-	incf	0x06,F,A	; increase timer value
-	goto	looptwo		; call again loop
-loop:
-	movlw	0x0
-	movwf	0x06, A
-	movff	0x05,PORTD	; move timer value into PORTD
-	call looptwo
-	movlw	0x02		; load max timer value into W
-	cpfslt	0x05, A		
-	return
-	incf	0x05,F,A
-	goto	loop
+	incf	0x06,F,A
+	goto	timer
 	
 
 ;start:
