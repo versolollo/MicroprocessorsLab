@@ -26,20 +26,20 @@ loop:
 write:
 	movlw	0x00
 	BSF	PORTD, 0, A	    ; disable output enablers
-	BSF	PORTD, 8, A	    
+	BSF	PORTD, 2, A	    
 	movwf	TRISE, A	    ; set PORTE to output
 	movf	PORTB, W, A	    ; load value to write in W
 	movwf	PORTE, A	    ; write W into PORTE
-	BTFSS	PORTC, 0, A
+	BTFSS	PORTC, 1, A
 	goto	clock1
 	goto	clock2
 clock1:	BSF	PORTD, 1, A	    ; turn 1 clock on
 	call	delay
 	BCF	PORTD, 1, A	    ; turn 1 clock off
 	goto	endwrite
-clock2:	BSF	PORTD, 9, A	    ; turn 2 clock on
+clock2:	BSF	PORTD, 3, A	    ; turn 2 clock on
 	call	delay
-	BCF	PORTD, 9, A	    ; turn 2 clock off
+	BCF	PORTD, 3, A	    ; turn 2 clock off
 endwrite:
 	movlw	0xFF
 	movwf	TRISE, A	    ; set PORTE back to input
@@ -47,15 +47,15 @@ endwrite:
 read:	
 	movlw	0xFF
 	movwf	PORTE, A	    ; set PORTE to input
-	BTFSS	PORTC, 0, A	    ; if bit is 0
+	BTFSS	PORTC, 1, A	    ; if bit is 0
 	BCF	PORTD, 0, A	    ; enable latch number 1
-	BTFSC	PORTC, 0, A	    ; if bit is 1
-	BCF	PORTD, 8, A	    ; enable latch number 0
+	BTFSC	PORTC, 1, A	    ; if bit is 1
+	BCF	PORTD, 2, A	    ; enable latch number 0
 	call	delay
 	movf	PORTE, W, A	    ; read value in PORTE
 	movwf	PORTF, A	    ; write value into PORTF
 	BSF	PORTD, 0, A
-	BSF	PORTD, 8, A
+	BSF	PORTD, 2, A
 	return
 delay:
 	movlw	0x00
