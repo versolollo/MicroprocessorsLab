@@ -10,13 +10,15 @@ main:
 start:
 	movlw	0x00
 	movwf	TRISD, A	    ; set PORTD to output
-	movwf	TRISF, A	    ; set PORTF to output
-	movlw	0x11		    
+	movwf	TRISH, A	    ; set PORTH to output
+	movlw	0x05		    
 	movwf	PORTD, A	    ; deactivate output enabler for latches
-	movlw	0xFF	
-	movwf	TRISC, A	    ; first bit of PORTC selects latch
-	movwf	TRISB, A	    ; set PORTB to input
-	movwf	TRISE, A	    ; initialise PORTE to input (avoid short circuits)
+	setf	TRISC, A	    ; set PORTC to input (need first bit)
+	setf	TRISB, A	    ; set PORTB to input
+	setf	TRISE, A	    ; initialise PORTE to input (avoid short circuits)
+	banksel	PADCFG1		    ; change bank
+	bsf	REPU		    ; PORTE pull-ups
+	bsf	RBPU	
 loop:
 	BTFSS	PORTC, 0, A	    ; if 0, read
 	call	read
@@ -46,15 +48,15 @@ endwrite:
 	return
 read:	
 	movlw	0xFF
-	movwf	PORTE, A	    ; set PORTE to input
+	movwf	TRISE, A	    ; set PORTE to input
 	BTFSS	PORTC, 1, A	    ; if bit is 0
 	BCF	PORTD, 0, A	    ; enable latch number 1
 	BTFSC	PORTC, 1, A	    ; if bit is 1
 	BCF	PORTD, 2, A	    ; enable latch number 0
 	call	delay
 	movf	PORTE, W, A	    ; read value in PORTE
-	movwf	PORTF, A	    ; write value into PORTF
-	BSF	PORTD, 0, A
+	movwf	PORTH, A	    ; write value into PORTH
+	BSF	PORTD, 0, A	    ; deactivate OE
 	BSF	PORTD, 2, A
 	return
 delay:
