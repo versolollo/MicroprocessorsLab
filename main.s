@@ -51,14 +51,12 @@ endwrite:
 read:	
 	movlw	0xFF
 	movwf	TRISE, A	    ; set PORTE to input
+	movlw	0x05
+	movwf	PORTD, A
 	BTFSS	PORTC, 1, A	    ; if bit is 0
 	BCF	PORTD, 0, A	    ; enable latch number 1
 	BTFSC	PORTC, 1, A	    ; if bit is 1
 	BCF	PORTD, 2, A	    ; enable latch number 0
-	BTFSS	PORTD, 0, A
-	BSF	PORTD, 2, A
-	BTFSS	PORTD, 2, A
-	BSF	PORTD, 0, A
 	call	delay
 	movf	PORTE, W, A	    ; read value in PORTE
 	movwf	PORTH, A	    ; write value into PORTH
