@@ -26,12 +26,14 @@ loop:
 	call	write
 	goto	loop		    ; repeat loop
 write:
-	movlw	0x00
 	BSF	PORTD, 0, A	    ; disable output enablers
-	BSF	PORTD, 2, A	    
+	call	delay
+	BSF	PORTD, 2, A
+	movlw	0x00
 	movwf	TRISE, A	    ; set PORTE to output
 	movf	PORTB, W, A	    ; load value to write in W
 	movwf	PORTE, A	    ; write W into PORTE
+	call	delay
 	BTFSS	PORTC, 1, A
 	goto	clock1
 	goto	clock2
@@ -53,11 +55,13 @@ read:
 	BCF	PORTD, 0, A	    ; enable latch number 1
 	BTFSC	PORTC, 1, A	    ; if bit is 1
 	BCF	PORTD, 2, A	    ; enable latch number 0
+	BTFSS	PORTD, 0, A
+	BSF	PORTD, 2, A
+	BTFSS	PORTD, 2, A
+	BSF	PORTD, 0, A
 	call	delay
 	movf	PORTE, W, A	    ; read value in PORTE
 	movwf	PORTH, A	    ; write value into PORTH
-	BSF	PORTD, 0, A	    ; deactivate OE
-	BSF	PORTD, 2, A
 	return
 delay:
 	movlw	0x00
