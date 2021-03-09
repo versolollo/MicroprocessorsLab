@@ -1,7 +1,7 @@
 #include <xc.inc>
 
 extrn	UART_Setup, UART_Transmit_Message  ; external subroutines
-extrn	BIG_LCD_Setup
+extrn	BIG_LCD_Setup, Status_Read, Turn_Off, LCD_Write
 	
 psect	udata_acs   ; reserve data space in access ram
 counter:    ds 1    ; reserve one byte for a counter variable
@@ -27,8 +27,10 @@ setup:	bcf	CFGS	; point to Flash program memory
 	bsf	EEPGD 	; access Flash program memory
 	call	UART_Setup	; setup UART
 	call	BIG_LCD_Setup	; setup BIG_LCD
-	
-	
+	call	Status_Read
+	call	LCD_Write
+	;call	Turn_Off
+	call	Status_Read
 	
 	goto	$
 	

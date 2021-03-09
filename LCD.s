@@ -1,6 +1,6 @@
 #include <xc.inc>
 
-global  BIG_LCD_Setup
+global  BIG_LCD_Setup, Status_Read, Turn_Off, LCD_Write
 
 psect	udata_acs   ; named variables in access ram
 LCD_cnt_l:	ds 1   ; reserve 1 byte for variable LCD_cnt_l
@@ -8,32 +8,159 @@ LCD_cnt_h:	ds 1   ; reserve 1 byte for variable LCD_cnt_h
 LCD_cnt_ms:	ds 1   ; reserve 1 byte for ms counter
 LCD_tmp:	ds 1   ; reserve 1 byte for temporary use
 LCD_counter:	ds 1   ; reserve 1 byte for counting through nessage
+LCD_Status:	ds 1 
 
 	LCD_E	EQU 5	; LCD enable bit
     	LCD_RS	EQU 4	; LCD register select bit
 
 psect	lcd_code,class=CODE
 BIG_LCD_Setup:
-	clrf	PORTB, A
-	clrf	PORTD, A
 	movlw	0x00
 	movwf	TRISB, A
 	movwf	TRISD, A
+	clrf	PORTB, A
+	clrf	PORTD, A
 Turn_On:
-	movlw	11001100B
+	call	Reset_Wait
+	movlw	00010000B
 	movwf	PORTB, A
-	movlw	11111100B
+	movlw	0x01
+	call	LCD_delay_x4us
+	movlw	00111111B
 	movwf	PORTD, A
+	movlw	0x01
+	call	LCD_delay_x4us
+	movlw	00000000B
+	movwf	PORTB, A
+	movlw	0x01
+	call	LCD_delay_x4us
+	return
+	
+Turn_Off:
+	call	Reset_Wait
+	movlw	00010000B
+	movwf	PORTB, A
+	movlw	0x01
+	call	LCD_delay_x4us
+	movlw	00111110B
+	movwf	PORTD, A
+	movlw	0x01
+	call	LCD_delay_x4us
+	movlw	00000000B
+	movwf	PORTB, A
+	movlw	0x01
+	call	LCD_delay_x4us
 	return
 	
 Status_Read:
-	movlw	11011100B
+	movlw	00011000B		;set pins for status read
 	movwf	PORTB, A
+	
+	movlw	0x01
+	call	LCD_delay_x4us
+	
 	movlw	00000000B
 	movwf	PORTD, A
 	
+	movlw	0x01
+	call	LCD_delay_x4us
+	
+	movlw	0xff
+	movwf	TRISD, W, A
+	
+	movlw	00001000B		;set pins for status read
+	movwf	PORTB, A
+	
+	movlw	0x01
+	call	LCD_delay_x4us
+	
+	movff	PORTD, LCD_Status	   ;get the status
+	movlw	0x00
+	movwf	TRISD, W, A
 	return
 	
+
+Reset_Wait:
+	call	Status_Read
+	movlw	00010000B
+	andwf	LCD_Status, W, A
+	movwf	LCD_Status, A
+	movlw	00010000B
+	cpfseq	LCD_Status, A
+	return
+	;return
+	goto	Reset_Wait
+
+	
+Set_X:
+	call	Reset_Wait
+	movlw	00010001B		;set pins for status read
+	movwf	PORTB, A
+	
+	movlw	0x01
+	call	LCD_delay_x4us
+	
+	movlw	10111000B
+	movwf	PORTD, A
+	
+	movlw	0x01
+	call	LCD_delay_x4us
+	
+	movlw	00000001B		;set pins for status read
+	movwf	PORTB, A
+	
+	movlw	0x01
+	call	LCD_delay_x4us
+	return
+	
+	
+Set_Y:
+	call	Reset_Wait
+	movlw	00010001B		;set pins for status read
+	movwf	PORTB, A
+	
+	movlw	0x01
+	call	LCD_delay_x4us
+	
+	movlw	01000000B
+	movwf	PORTD, A
+	
+	movlw	0x01
+	call	LCD_delay_x4us
+	
+	movlw	00000001B		;set pins for status read
+	movwf	PORTB, A
+	
+	movlw	0x01
+	call	LCD_delay_x4us
+	
+	return
+	
+	
+LCD_Write:
+	call	Reset_Wait
+	call	Set_Y
+	call	Set_X
+	
+	movlw	00010101B		;set pins for status read
+	movwf	PORTB, A
+	
+	movlw	0x01
+	call	LCD_delay_x4us
+	
+	movlw	11111111B
+	movwf	PORTD, A
+	
+	movlw	0x01
+	call	LCD_delay_x4us
+	
+	movlw	00000101B		;set pins for status read
+	movwf	PORTB, A
+	
+	movlw	0x01
+	call	LCD_delay_x4us
+	
+	return
 	
 	
 LCD_Setup:
