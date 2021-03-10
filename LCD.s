@@ -1,6 +1,6 @@
 #include <xc.inc>
 
-global  BIG_LCD_Setup
+global  LCD_Setup
 
 psect	udata_acs   ; named variables in access ram
 LCD_cnt_l:	ds 1   ; reserve 1 byte for variable LCD_cnt_l
@@ -13,7 +13,7 @@ LCD_counter:	ds 1   ; reserve 1 byte for counting through nessage
     	LCD_RS	EQU 4	; LCD register select bit
 
 psect	lcd_code,class=CODE
-BIG_LCD_Setup:
+LCD_Setup:
 	clrf	PORTB, A
 	clrf	PORTD, A
 	movlw	0x00
