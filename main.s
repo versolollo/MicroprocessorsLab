@@ -1,8 +1,8 @@
 #include <xc.inc>
 
-extrn	UART_Setup, UART_Transmit_Message  ; external subroutines
-extrn	LCD_Setup
-extrn	setup_message
+;extrn	UART_Setup, UART_Transmit_Message  ; external subroutines
+;extrn	LCD_Setup
+;extrn	setup_message, message_body
 global	heart_beats
     
 psect	udata_acs
@@ -16,8 +16,11 @@ rst: 	org 0x0	    ; start of main code. Beware, interrupt starts at 0x08!!
 
 	; ******* Setup Code ***********************
 setup:	
-	call	LCD_Setup	; setup (small) LCD
-	call	setup_message	; required before printing messages
+	bcf	TMR0IE
+	movlw	0x10
+	goto	$
+;	call	LCD_Setup	; setup (small) LCD
+;	call	setup_message	; required before printing messages
 
 	; ******* Main programme ****************************************
 start: 	movlw	0x00
@@ -32,6 +35,9 @@ loop: 	; start timer of 10 seconds
 		; 4) goto 1)
 		; if  interrupt flag is triggered, stop timer, switch flag off 
 		; and return
+	movlw	0x32
+	;movwf	message_body, A
+	;movwf	message_body+1, A
 	
 	; multiply number of pulses in 10 seconds by (e.g.) 6
 	; print rate on screen

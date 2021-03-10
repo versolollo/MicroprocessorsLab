@@ -1,10 +1,10 @@
 #include <xc.inc>
-global	setup_message
+global	setup_message, message_body
 extrn	heart_beats, LCD_Write_Message
     
 psect	data    
 message_head_program:	    ; message data initially stored in program memory
-	db	'P','u','l','s','e',':',' '
+	db	'P','u','l','s','e',':',0x00
 	message_head_l   EQU	7	; length of data
 	align	2
 message_tail_program:
@@ -49,7 +49,7 @@ setup_message:					; transfer message from program memory to RAM
 	return
 	
 loop: 	tblrd*+			; one byte from PM to TABLAT, increment TBLPRT
-	movff	TABLAT, POSTINC0; move data from TABLAT to (FSR0), inc FSR0	
+H	movff	TABLAT, POSTINC0; move data from TABLAT to (FSR0), inc FSR0	
 	decfsz	counter, A		; count down to zero
 	bra	loop		; keep going until finished
 	return
@@ -57,5 +57,6 @@ loop: 	tblrd*+			; one byte from PM to TABLAT, increment TBLPRT
 print_message:
 	lfsr	2, message_head
 	movlw	total_length
-	call	LCD_Write_Message
+	call	LCD_Write_Message  
+	return
     
