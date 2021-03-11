@@ -1,14 +1,14 @@
 #include <xc.inc>
-global	setup_message, message_body
+global	setup_message, message_body, print_message
 extrn	heart_beats, LCD_Write_Message
     
 psect	data    
 message_head_program:	    ; message data initially stored in program memory
-	db	'P','u','l','s','e',':',0x00
+	db	'P','u','l','s','e',':',0x0a
 	message_head_l   EQU	7	; length of data
 	align	2
 message_tail_program:
-	db	'H','z', 0x00
+	db	'H','z', 0x0a
 	message_tail_l	EQU	3	; length of data
 	
 	align	2
@@ -26,34 +26,33 @@ counter:	ds  1
 psect	code
 setup_message:					; transfer message from program memory to RAM
 	lfsr	0, message_head			; transfer head of message
-	movlw	low highword(message_head)	; address of data in PM
+	movlw	low highword(message_head_program)	; address of data in PM
 	movwf	TBLPTRU, A			; load upper bits to TBLPTRU
-	movlw	high(message_head)		; address of data in PM
+	movlw	high(message_head_program)		; address of data in PM
 	movwf	TBLPTRH, A			; load high byte to TBLPTRH
-	movlw	low(message_head)		; address of data in PM
+	movlw	low(message_head_program)		; address of data in PM
 	movwf	TBLPTRL, A			; load low byte to TBLPTRL
 	movlw	message_head_l			; bytes to read
 	movwf 	counter, A			; our counter register
-	call	loop				; transfer message
+	call	copy_loop				; transfer message
 	
-	lfsr	0, message_head			; transfer tail of message
-	movlw	low highword(message_tail)	; address of data in PM
+	lfsr	0, message_tail			; transfer tail of message
+	movlw	low highword(message_tail_program)	; address of data in PM
 	movwf	TBLPTRU, A			; load upper bits to TBLPTRU
-	movlw	high(message_tail)		; address of data in PM
+	movlw	high(message_tail_program)		; address of data in PM
 	movwf	TBLPTRH, A			; load high byte to TBLPTRH
-	movlw	low(message_tail)		; address of data in PM
+	movlw	low(message_tail_program)		; address of data in PM
 	movwf	TBLPTRL, A			; load low byte to TBLPTRL
 	movlw	message_tail_l			; bytes to read
 	movwf 	counter, A			; our counter register
-	call	loop				; transfer message
+	call	copy_loop				; transfer message
 	return
-	
-loop: 	tblrd*+			; one byte from PM to TABLAT, increment TBLPRT
-H	movff	TABLAT, POSTINC0; move data from TABLAT to (FSR0), inc FSR0	
+copy_loop: 	
+	tblrd*+			; one byte from PM to TABLAT, increment TBLPRT
+	movff	TABLAT, POSTINC0; move data from TABLAT to (FSR0), inc FSR0	
 	decfsz	counter, A		; count down to zero
-	bra	loop		; keep going until finished
+	bra	copy_loop		; keep going until finished
 	return
-	
 print_message:
 	lfsr	2, message_head
 	movlw	total_length
